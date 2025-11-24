@@ -1,0 +1,37 @@
+{
+  "info": {
+    "name": "Bypass Coverage",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Upload Disguised Exe",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "multipart/form-data" }
+        ],
+        "url": "http://localhost:8080/api/uploads"
+      }
+    },
+    {
+      "name": "Admin Role Spoofing",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\"userId\":2, \"role\":\"ADMIN\"}" },
+        "url": "http://localhost:8080/api/admin/block"
+      }
+    },
+    {
+      "name": "Force Driver Assign",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\"userId\":1, \"pickupLocation\":\"A\", \"dropLocation\":\"B\", \"pickupTime\":\"2025-12-25 10:00:00\", \"passengers\":2, \"vehicleType\":\"sedan\", \"driverId\":9999, \"distance\":5, \"fare\":10, \"paymentMode\":\"card\"}" },
+        "url": "http://localhost:8080/api/bookings/create"
+      }
+    }
+  ]
+}
+

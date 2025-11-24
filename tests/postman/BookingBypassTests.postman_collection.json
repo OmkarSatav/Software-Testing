@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "Taxi Booking Bypass Tests",
+    "description": "Postman collection for bypass testing"
+  },
+  "item": [
+    {
+      "name": "Login Valid User",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"user@test.com\", \"password\": \"password123\"}"
+        }
+      }
+    },
+    {
+      "name": "Bypass: Past Time Booking",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings/create",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\": 1, \"pickupLocation\": \"A\", \"dropLocation\": \"B\", \"pickupTime\": \"2020-01-01 10:00:00\", \"passengers\": 2, \"vehicleType\": \"sedan\", \"distance\": 10, \"fare\": 500, \"paymentMode\": \"card\"}"
+        }
+      }
+    },
+    {
+      "name": "Bypass: Excessive Passengers",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings/create",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\": 1, \"pickupLocation\": \"A\", \"dropLocation\": \"B\", \"pickupTime\": \"2025-12-25 10:00:00\", \"passengers\": 25, \"vehicleType\": \"sedan\", \"distance\": 10, \"fare\": 500, \"paymentMode\": \"card\"}"
+        }
+      }
+    },
+    {
+      "name": "Bypass: Negative Fare",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings/create",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\": 1, \"pickupLocation\": \"A\", \"dropLocation\": \"B\", \"pickupTime\": \"2025-12-25 10:00:00\", \"passengers\": 2, \"vehicleType\": \"sedan\", \"distance\": 10, \"fare\": -500, \"paymentMode\": \"card\"}"
+        }
+      }
+    },
+    {
+      "name": "Bypass: Invalid Vehicle Type",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings/create",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\": 1, \"pickupLocation\": \"A\", \"dropLocation\": \"B\", \"pickupTime\": \"2025-12-25 10:00:00\", \"passengers\": 2, \"vehicleType\": \"helicopter\", \"distance\": 10, \"fare\": 500, \"paymentMode\": \"card\"}"
+        }
+      }
+    },
+    {
+      "name": "Bypass: Missing Fields",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/bookings/create",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\": 1, \"pickupLocation\": null, \"dropLocation\": \"B\", \"pickupTime\": \"2025-12-25 10:00:00\", \"passengers\": 2, \"vehicleType\": \"sedan\", \"distance\": 10, \"fare\": 500, \"paymentMode\": \"card\"}"
+        }
+      }
+    },
+    {
+      "name": "Bypass Passenger Limit",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/api/book",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"passengers\": 20}"
+        }
+      }
+    }
+  ]
+}

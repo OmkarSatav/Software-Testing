@@ -1,0 +1,28 @@
+# Maven
+target/
+*.jar
+*.war
+pom.xml.tag
+pom.xml.releaseBackup
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+test-results/
+coverage/
+
+# Misc
+*.log
+node_modules/
+.env
+

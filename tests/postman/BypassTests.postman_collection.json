@@ -1,0 +1,299 @@
+{
+	"info": {
+		"name": "Taxi Booking - Bypass Testing Suite",
+		"description": "Collection of bypass tests to validate server-side validation by sending manipulated requests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Setup - Register User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Registration successful\", function() {",
+							"    pm.response.to.have.status(200);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"    pm.collectionVariables.set(\"userId\", jsonData.userId);",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"bypass@test.com\",\n  \"password\": \"test123\",\n  \"firstName\": \"Bypass\",\n  \"lastName\": \"Tester\",\n  \"phoneNumber\": \"9876543210\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/register",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "auth", "register"]
+				}
+			}
+		},
+		{
+			"name": "Setup - Login User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Login successful\", function() {",
+							"    pm.response.to.have.status(200);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.true;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"bypass@test.com\",\n  \"password\": \"test123\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/login",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "auth", "login"]
+				}
+			}
+		},
+		{
+			"name": "BYPASS 1: Past Pickup Time",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Server rejects past pickup time\", function() {",
+							"    pm.response.to.have.status(400);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include(\"Invalid pickup time\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pickupLatitude\": 19.0760,\n  \"pickupLongitude\": 72.8777,\n  \"dropLatitude\": 19.1136,\n  \"dropLongitude\": 72.9083,\n  \"pickupTime\": \"2020-01-01T10:00:00\",\n  \"passengers\": 2,\n  \"vehicleType\": \"SEDAN\",\n  \"paymentMode\": \"CASH\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/bookings/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "bookings", "create"]
+				}
+			}
+		},
+		{
+			"name": "BYPASS 2: Excessive Passengers (25)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Server rejects excessive passengers\", function() {",
+							"    pm.response.to.have.status(400);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include(\"passenger\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pickupLatitude\": 19.0760,\n  \"pickupLongitude\": 72.8777,\n  \"dropLatitude\": 19.1136,\n  \"dropLongitude\": 72.9083,\n  \"pickupTime\": \"2025-12-31T10:00:00\",\n  \"passengers\": 25,\n  \"vehicleType\": \"SEDAN\",\n  \"paymentMode\": \"CASH\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/bookings/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "bookings", "create"]
+				}
+			}
+		},
+		{
+			"name": "BYPASS 3: Zero Passengers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Server rejects zero passengers\", function() {",
+							"    pm.response.to.have.status(400);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pickupLatitude\": 19.0760,\n  \"pickupLongitude\": 72.8777,\n  \"dropLatitude\": 19.1136,\n  \"dropLongitude\": 72.9083,\n  \"pickupTime\": \"2025-12-31T10:00:00\",\n  \"passengers\": 0,\n  \"vehicleType\": \"SEDAN\",\n  \"paymentMode\": \"CASH\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/bookings/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "bookings", "create"]
+				}
+			}
+		},
+		{
+			"name": "BYPASS 4: Negative Passengers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Server rejects negative passengers\", function() {",
+							"    pm.response.to.have.status(400);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pickupLatitude\": 19.0760,\n  \"pickupLongitude\": 72.8777,\n  \"dropLatitude\": 19.1136,\n  \"dropLongitude\": 72.9083,\n  \"pickupTime\": \"2025-12-31T10:00:00\",\n  \"passengers\": -5,\n  \"vehicleType\": \"SEDAN\",\n  \"paymentMode\": \"CASH\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/bookings/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "bookings", "create"]
+				}
+			}
+		},
+		{
+			"name": "BYPASS 5: Outside Service Area",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Server rejects location outside service area\", function() {",
+							"    pm.response.to.have.status(400);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include(\"service area\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [{"key": "Content-Type", "value": "application/json"}],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"pickupLatitude\": 19.0760,\n  \"pickupLongitude\": 72.8777,\n  \"dropLatitude\": 28.6139,\n  \"dropLongitude\": 77.2090,\n  \"pickupTime\": \"2025-12-31T10:00:00\",\n  \"passengers\": 2,\n  \"vehicleType\": \"SEDAN\",\n  \"paymentMode\": \"CASH\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/bookings/create",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "bookings", "create"]
+				}
+			}
+		},
+		{
+			"name": "BYPASS 6: Upload Non-Image File",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Server rejects non-image file\", function() {",
+							"    pm.response.to.have.status(400);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "test.txt"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/upload/id-proof",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "upload", "id-proof"]
+				}
+			}
+		},
+		{
+			"name": "BYPASS 7: Access Admin Without Role",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Server rejects non-admin access\", function() {",
+							"    pm.response.to.have.status(403);",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.be.false;",
+							"    pm.expect(jsonData.message).to.include(\"Admin\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/admin/users",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "admin", "users"]
+				}
+			}
+		}
+	]
+}
+

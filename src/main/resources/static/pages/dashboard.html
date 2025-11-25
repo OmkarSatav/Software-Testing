@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Taxi Booking</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Taxi Booking</div>
+        <div class="nav-menu">
+            <a href="/static/pages/dashboard.html" class="active">Dashboard</a>
+            <a href="/static/pages/bookings.html">My Bookings</a>
+            <a href="/static/pages/upload.html">Upload ID</a>
+            <a href="#" id="logoutBtn">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Book a Taxi</h1>
+        
+        <div class="booking-form-container">
+            <form id="bookingForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pickupLat">Pickup Latitude</label>
+                        <input type="number" id="pickupLat" step="0.000001" required 
+                               min="-90" max="90" value="19.0760">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pickupLon">Pickup Longitude</label>
+                        <input type="number" id="pickupLon" step="0.000001" required 
+                               min="-180" max="180" value="72.8777">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dropLat">Drop Latitude</label>
+                        <input type="number" id="dropLat" step="0.000001" required 
+                               min="-90" max="90" value="19.1136">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dropLon">Drop Longitude</label>
+                        <input type="number" id="dropLon" step="0.000001" required 
+                               min="-180" max="180" value="72.9083">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pickupTime">Pickup Time</label>
+                        <input type="datetime-local" id="pickupTime" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="passengers">Passengers</label>
+                        <input type="number" id="passengers" required 
+                               min="1" max="4" value="1">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="vehicleType">Vehicle Type</label>
+                        <select id="vehicleType" required>
+                            <option value="">Select Vehicle</option>
+                            <option value="SEDAN">Sedan</option>
+                            <option value="SUV">SUV</option>
+                            <option value="HATCHBACK">Hatchback</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="paymentMode">Payment Mode</label>
+                        <select id="paymentMode" required>
+                            <option value="">Select Payment</option>
+                            <option value="CASH">Cash</option>
+                            <option value="CARD">Card</option>
+                            <option value="UPI">UPI</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="estimatedFare">Estimated Fare</label>
+                    <input type="text" id="estimatedFare" readonly value="Calculating...">
+                </div>
+                
+                <button type="submit" class="btn-primary" id="bookBtn">Book Now</button>
+            </form>
+        </div>
+        
+        <div id="message" class="message"></div>
+    </div>
+    
+    <script src="/static/js/booking.js"></script>
+</body>
+</html>
+

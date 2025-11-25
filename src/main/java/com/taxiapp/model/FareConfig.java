@@ -4,12 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
+@Table(name = "fare_config")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,17 +17,22 @@ public class FareConfig {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private Double baseFare;
+	@Column(nullable = false)
+	private Double baseFare = 50.0;
 
-	private Double ratePerKm;
+	@Column(nullable = false)
+	private Double ratePerKm = 12.0;
 
-	private Double peakHourMultiplier;
+	@Column(nullable = false)
+	private Double peakHourMultiplier = 1.5;
 
-	private Integer maxPassengers;
+	@Column(nullable = false)
+	private Integer maxPassengers = 4;
 
-	private Double maxServiceRadius;
+	@Column(nullable = false)
+	private Double maxServiceRadius = 50.0;
 
-	private Double minFare;
-
+	@Column(nullable = false)
+	private Double minFare = 50.0;
 }
 

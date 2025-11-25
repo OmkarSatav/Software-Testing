@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings - Taxi Booking</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Taxi Booking</div>
+        <div class="nav-menu">
+            <a href="/static/pages/dashboard.html">Dashboard</a>
+            <a href="/static/pages/bookings.html" class="active">My Bookings</a>
+            <a href="/static/pages/upload.html">Upload ID</a>
+            <a href="#" id="logoutBtn">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>My Bookings</h1>
+        
+        <div id="bookingsList" class="bookings-list"></div>
+        <div id="message" class="message"></div>
+    </div>
+    
+    <script>
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            fetch('/api/auth/logout', { method: 'POST' })
+                .then(() => window.location.href = '/static/index.html');
+        });
+        
+        fetch('/api/bookings/user')
+            .then(response => response.json())
+            .then(bookings => {
+                const container = document.getElementById('bookingsList');
+                
+                if (bookings.length === 0) {
+                    container.innerHTML = '<p>No bookings found.</p>';
+                    return;
+                }
+                
+                bookings.forEach(booking => {
+                    const card = document.createElement('div');
+                    card.className = 'booking-card';
+                    card.innerHTML = `
+                        <div class="booking-header">
+                            <span class="booking-id">Booking #${booking.id}</span>
+                            <span class="booking-status status-${booking.status.toLowerCase()}">${booking.status}</span>
+                        </div>
+                        <div class="booking-details">
+                            <p><strong>Pickup:</strong> ${new Date(booking.pickupTime).toLocaleString()}</p>
+                            <p><strong>Distance:</strong> ${booking.distance.toFixed(2)} km</p>
+                            <p><strong>Fare:</strong> ₹${booking.fare.toFixed(2)}</p>
+                            <p><strong>Vehicle:</strong> ${booking.vehicleType}</p>
+                            <p><strong>Payment:</strong> ${booking.paymentMode}</p>
+                        </div>
+                        ${booking.status === 'ACTIVE' ? `
+                            <button class="btn-cancel" onclick="cancelBooking(${booking.id})">Cancel Booking</button>
+                        ` : ''}
+                    `;
+                    container.appendChild(card);
+                });
+            })
+            .catch(error => {
+                document.getElementById('message').textContent = 'Error loading bookings';
+                document.getElementById('message').className = 'message error';
+            });
+        
+        function cancelBooking(bookingId) {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+            
+            fetch(`/api/bookings/${bookingId}/cancel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: 'User cancelled' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

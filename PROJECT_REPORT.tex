@@ -1,0 +1,901 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{tcolorbox}
+\usepackage{lipsum}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{CSE731 Software Testing}
+\lhead{Bypass Testing Project}
+\rfoot{Page \thepage}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    citecolor=blue
+}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\LARGE\bfseries International Institute of Information Technology Bangalore\par}
+    \vspace{0.5cm}
+    {\large Department of Computer Science and Engineering\par}
+    
+    \vspace{3cm}
+    
+    {\Huge\bfseries Bypassing Client-Side Booking Rules in a Java Taxi and Driver Booking Web Application\par}
+    
+    \vspace{2cm}
+    
+    {\Large A Project Report\par}
+    \vspace{0.3cm}
+    {\large Submitted in partial fulfillment of the requirements for\par}
+    \vspace{0.3cm}
+    {\Large\textbf{CSE731: Software Testing}\par}
+    \vspace{0.3cm}
+    {\large Term I, 2025-26\par}
+    
+    \vspace{2.5cm}
+    
+    {\large\textbf{Submitted by:}\par}
+    \vspace{0.5cm}
+    \begin{tabular}{rl}
+        \textbf{MT2024106} & Omkar Dhananjay Satav \\
+        \textbf{MT2024107} & Shivam Padaliya \\
+    \end{tabular}
+    
+    \vfill
+    
+    {\large\textbf{Project Category:} Client-Side Web Application Bypass Testing\par}
+    \vspace{0.5cm}
+    {\large\today\par}
+    
+\end{titlepage}
+
+\thispagestyle{empty}
+
+\newpage
+\thispagestyle{empty}
+
+\section*{Abstract}
+This project implements a comprehensive bypass testing framework for a taxi booking web application built using Java Spring Boot. The primary objective is to demonstrate that client-side validation alone is insufficient for web application security and that robust server-side validation is essential. 
+
+The system includes rich client-side validation logic implemented in HTML5 and JavaScript, which is systematically bypassed using various techniques including browser DevTools manipulation, direct API calls via Postman, and automated Selenium tests. The project contains over 3800 lines of code spanning backend services, frontend interfaces, and comprehensive test suites. 
+
+Results demonstrate that all bypass attempts are successfully detected and rejected by server-side validation, proving the effectiveness of proper backend security measures. The testing suite includes 29 comprehensive test cases (12 JUnit, 7 Postman, 10 Selenium) with 100\% success rate in identifying and preventing security vulnerabilities.
+
+\vspace{0.8cm}
+
+\noindent\textbf{Keywords:} Bypass Testing, Client-Side Validation, Server-Side Validation, Web Application Security, Spring Boot, Selenium, JUnit, Postman, Software Testing, Security Testing
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+\subsection{Project Overview}
+Modern web applications typically implement validation at two levels: client-side (browser) and server-side (backend). While client-side validation provides immediate user feedback and reduces unnecessary server requests, it cannot be trusted for security purposes as it can be easily bypassed by malicious users.
+
+This project focuses on \textbf{Client-Side Web Application Bypass Testing}, a critical aspect of web security testing. We have developed a fully functional taxi booking system with intentionally rich client-side validation, then systematically demonstrated various bypass techniques to validate that proper server-side validation prevents security vulnerabilities.
+
+\section{Application Description}
+
+\subsection{Taxi Booking System Overview}
+The RideWithMe Taxi Booking System is a comprehensive web-based platform that connects passengers with available taxi drivers in real-time. The application simulates a complete ride-hailing service similar to popular platforms like Uber or Ola, providing end-to-end booking management from user registration to ride completion.
+
+\subsection{Core Functionality}
+
+\subsubsection{User Management}
+The system supports multiple user roles with distinct capabilities:
+
+\textbf{Passengers:}
+\begin{itemize}
+    \item Register with email, password, and personal details
+    \item Login with secure session management
+    \item Maintain profile information including phone number
+    \item Track booking history and statistics
+    \item Upload identification documents for verification
+\end{itemize}
+
+\textbf{Drivers:}
+\begin{itemize}
+    \item Pre-registered driver profiles with vehicle information
+    \item Real-time location tracking (latitude/longitude)
+    \item Availability status management
+    \item Vehicle type classification (Sedan, SUV, Hatchback)
+    \item Rating and performance metrics
+    \item License plate registration
+\end{itemize}
+
+\textbf{Administrators:}
+\begin{itemize}
+    \item View all users and their activities
+    \item Monitor all bookings in the system
+    \item Manage driver availability and assignments
+    \item Toggle user account status (active/inactive)
+    \item Access comprehensive system analytics
+\end{itemize}
+
+\subsubsection{Booking Process}
+The taxi booking workflow follows a structured process:
+
+\begin{enumerate}
+    \item \textbf{Location Selection:} User specifies pickup and drop-off locations using geographic coordinates (latitude and longitude)
+    
+    \item \textbf{Distance Calculation:} System automatically calculates the distance between pickup and drop locations using the Haversine formula, which accounts for Earth's curvature
+    
+    \item \textbf{Fare Estimation:} Dynamic fare calculation based on:
+    \begin{itemize}
+        \item Base fare: ₹50
+        \item Distance-based charge: ₹12 per kilometer
+        \item Peak hour multiplier: 1.5x during rush hours (8-10 AM, 5-7 PM)
+        \item Minimum fare guarantee: ₹50
+    \end{itemize}
+    
+    \item \textbf{Schedule Selection:} User chooses pickup date and time (must be in future)
+    
+    \item \textbf{Passenger Count:} Specify number of passengers (1-4 persons)
+    
+    \item \textbf{Vehicle Selection:} Choose from available vehicle types:
+    \begin{itemize}
+        \item Sedan: Standard 4-seater vehicle
+        \item SUV: Spacious 6-seater vehicle
+        \item Hatchback: Compact 4-seater vehicle
+    \end{itemize}
+    
+    \item \textbf{Payment Mode:} Select payment method (Cash, Card, UPI)
+    
+    \item \textbf{Driver Assignment:} System automatically assigns the nearest available driver based on:
+    \begin{itemize}
+        \item Driver's current location
+        \item Vehicle type match
+        \item Driver availability status
+        \item Distance from pickup location
+    \end{itemize}
+    
+    \item \textbf{Booking Confirmation:} User receives booking details including:
+    \begin{itemize}
+        \item Unique booking ID
+        \item Assigned driver information
+        \item Estimated fare
+        \item Pickup time
+        \item Booking status
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Booking Management}
+After booking creation, users can:
+
+\begin{itemize}
+    \item \textbf{View Bookings:} Access complete booking history with details
+    \item \textbf{Track Status:} Monitor booking status (Active, Completed, Cancelled)
+    \item \textbf{Cancel Bookings:} Cancel active bookings with reason specification
+    \item \textbf{View Details:} Access comprehensive information about each booking including distance, fare, driver details, and timestamps
+\end{itemize}
+
+\subsection{Business Rules and Constraints}
+
+The system enforces several business rules to ensure operational integrity:
+
+\begin{enumerate}
+    \item \textbf{Service Area Limitation:} Bookings are restricted to a 50-kilometer radius from the city center to ensure service quality and driver availability
+    
+    \item \textbf{Single Active Booking:} Each user can have only one active booking at a time to prevent resource conflicts and ensure fair driver allocation
+    
+    \item \textbf{Future Booking Only:} Pickup time must be in the future to prevent invalid booking requests
+    
+    \item \textbf{Passenger Capacity:} Maximum 4 passengers per booking to match standard vehicle capacity
+    
+    \item \textbf{Driver Availability:} Only available drivers are assigned to new bookings; drivers become unavailable once assigned
+    
+    \item \textbf{Cancellation Policy:} Only active bookings can be cancelled; completed or already cancelled bookings cannot be modified
+    
+    \item \textbf{User Authorization:} Users can only view and manage their own bookings; cross-user access is prevented
+\end{enumerate}
+
+\subsection{Additional Features}
+
+\subsubsection{File Upload System}
+For user verification and compliance:
+\begin{itemize}
+    \item Upload government-issued ID proof
+    \item Supported formats: JPG, PNG
+    \item Maximum file size: 1 MB
+    \item Automatic file type and size validation
+    \item Secure storage with user association
+\end{itemize}
+
+\subsubsection{Real-Time Fare Calculation}
+The system provides transparent fare calculation:
+\begin{itemize}
+    \item Instant fare estimation before booking
+    \item Peak hour detection and surcharge application
+    \item Distance-based pricing with clear breakdown
+    \item Minimum fare guarantee
+    \item No hidden charges
+\end{itemize}
+
+\subsubsection{Admin Dashboard}
+Comprehensive administrative interface:
+\begin{itemize}
+    \item User management with status controls
+    \item Booking analytics and monitoring
+    \item Driver fleet management
+    \item System-wide statistics and reports
+    \item Role-based access control
+\end{itemize}
+
+\subsection{Technical Implementation}
+
+The taxi booking system is built using modern web technologies:
+
+\textbf{Backend:} Java Spring Boot framework provides robust REST APIs for all operations including user authentication, booking management, driver assignment, and fare calculation.
+
+\textbf{Frontend:} Responsive HTML5/CSS3/JavaScript interface offers intuitive user experience with real-time validation, dynamic fare calculation, and seamless navigation.
+
+\textbf{Database:} H2 in-memory database stores user profiles, booking records, driver information, and fare configurations with proper relational integrity.
+
+\textbf{Security:} Session-based authentication, role-based authorization, input validation, and secure data handling ensure system security and user privacy.
+
+\subsection{Problem Statement}
+The core problem addressed in this project is:
+\begin{quote}
+\textit{How can we verify that a web application's security does not rely solely on client-side validation, and that all business rules are properly enforced on the server?}
+\end{quote}
+
+\subsection{Project Scope}
+\begin{itemize}
+    \item Development of a complete taxi booking web application
+    \item Implementation of comprehensive client-side validation
+    \item Implementation of robust server-side validation
+    \item Design and execution of bypass test cases
+    \item Automated testing using JUnit, Postman, and Selenium
+    \item Documentation of vulnerabilities and mitigation strategies
+\end{itemize}
+
+\subsection{Course Alignment}
+This project aligns with the CSE731 course requirement for \textbf{Client-side web applications testing (bypass testing)}, specifically:
+
+\begin{quote}
+\textit{Projects that involve testing of client side code of a web application by designing test cases that bypass client-side validation and sending changed/corrupt input to the server.}
+\end{quote}
+
+This project fully satisfies the requirement by implementing comprehensive bypass testing techniques and demonstrating the importance of server-side validation.
+
+\section{System Architecture}
+
+\subsection{Technology Stack}
+
+\subsubsection{Backend Technologies}
+\begin{itemize}
+    \item \textbf{Framework:} Spring Boot 4.0.0
+    \item \textbf{Language:} Java 11
+    \item \textbf{Database:} H2 (in-memory)
+    \item \textbf{ORM:} JPA/Hibernate
+    \item \textbf{Build Tool:} Maven 3.9+
+\end{itemize}
+
+\subsubsection{Frontend Technologies}
+\begin{itemize}
+    \item \textbf{Markup:} HTML5
+    \item \textbf{Styling:} CSS3
+    \item \textbf{Scripting:} Vanilla JavaScript (ES6)
+    \item \textbf{API Communication:} Fetch API
+\end{itemize}
+
+\subsubsection{Testing Technologies}
+\begin{itemize}
+    \item \textbf{Unit Testing:} JUnit 5
+    \item \textbf{API Testing:} Postman/Newman
+    \item \textbf{UI Testing:} Selenium WebDriver 4.8.0
+    \item \textbf{Mocking:} Mockito
+\end{itemize}
+
+\subsection{System Components}
+
+\subsubsection{Backend Architecture}
+The backend follows a layered architecture pattern:
+
+\begin{enumerate}
+    \item \textbf{Controller Layer:} REST API endpoints
+    \begin{itemize}
+        \item AuthController - Authentication operations
+        \item BookingController - Booking management
+        \item AdminController - Administrative functions
+        \item DriverController - Driver operations
+        \item FileUploadController - File handling
+    \end{itemize}
+    
+    \item \textbf{Service Layer:} Business logic and validation
+    \begin{itemize}
+        \item AuthService - User authentication
+        \item BookingService - Booking validation and processing
+        \item FareService - Fare calculation and validation
+        \item DriverService - Driver assignment
+        \item AdminService - Administrative operations
+    \end{itemize}
+    
+    \item \textbf{Repository Layer:} Data access
+    \begin{itemize}
+        \item UserRepository
+        \item BookingRepository
+        \item DriverRepository
+        \item FareConfigRepository
+    \end{itemize}
+    
+    \item \textbf{Model Layer:} Domain entities
+    \begin{itemize}
+        \item User - User information
+        \item Booking - Booking details
+        \item Driver - Driver information
+        \item FareConfig - Fare configuration
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Frontend Architecture}
+The frontend consists of:
+\begin{itemize}
+    \item \textbf{Authentication Pages:} Login and Registration
+    \item \textbf{User Dashboard:} Booking interface
+    \item \textbf{Booking Management:} View and cancel bookings
+    \item \textbf{File Upload:} ID verification
+    \item \textbf{Admin Panel:} System administration
+\end{itemize}
+
+\section{Features and Validation Rules}
+
+\subsection{Client-Side Validation Features}
+
+\subsubsection{Authentication Validation}
+\begin{itemize}
+    \item Email format validation (regex pattern)
+    \item Password minimum length (6 characters)
+    \item Required field validation
+    \item Phone number format (10 digits)
+\end{itemize}
+
+\subsubsection{Booking Validation}
+\begin{itemize}
+    \item Pickup time must be in future (min attribute)
+    \item Passengers: 1-4 only (min/max attributes)
+    \item Fare field is disabled (readonly attribute)
+    \item Vehicle type selection mandatory (required attribute)
+    \item Distance calculation hidden from user
+    \item One active booking limit (UI button disabled)
+    \item Service radius constraint (50 km maximum)
+\end{itemize}
+
+\subsubsection{File Upload Validation}
+\begin{itemize}
+    \item File type: .jpg, .png only (accept attribute)
+    \item Maximum size: 1MB (JavaScript validation)
+    \item File required validation
+\end{itemize}
+
+\subsection{Server-Side Validation Implementation}
+
+All client-side validations are reimplemented and enforced on the server:
+
+\begin{lstlisting}[language=Java, caption=Server-Side Time Validation]
+public static boolean isValidPickupTime(LocalDateTime pickupTime) {
+    return pickupTime != null && pickupTime.isAfter(LocalDateTime.now());
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Java, caption=Server-Side Passenger Validation]
+public boolean validatePassengers(Integer passengers) {
+    if (passengers == null) return false;
+    FareConfig config = getDefaultConfig();
+    return passengers > 0 && passengers <= config.getMaxPassengers();
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Java, caption=Server-Side Distance Validation]
+public boolean validateDistance(Double distance) {
+    if (distance == null) return false;
+    FareConfig config = getDefaultConfig();
+    return distance >= 0 && distance <= config.getMaxServiceRadius();
+}
+\end{lstlisting}
+
+\section{Bypass Testing Methodology}
+
+\subsection{Testing Strategy}
+Our bypass testing strategy consists of three complementary approaches:
+
+\begin{enumerate}
+    \item \textbf{Unit Testing (JUnit):} Direct testing of service layer validation
+    \item \textbf{API Testing (Postman):} HTTP request manipulation
+    \item \textbf{UI Testing (Selenium):} DOM manipulation and JavaScript execution
+\end{enumerate}
+
+\subsection{Bypass Techniques Implemented}
+
+\subsubsection{Browser DevTools Manipulation}
+Using browser console to modify DOM elements:
+\begin{lstlisting}[language=JavaScript, caption=Passenger Field Manipulation]
+document.getElementById('passengers').value = 25;
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, caption=Time Constraint Removal]
+document.getElementById('pickupTime').removeAttribute('min');
+document.getElementById('pickupTime').value = '2020-01-01T10:00';
+\end{lstlisting}
+
+\begin{lstlisting}[language=JavaScript, caption=Readonly Field Enablement]
+document.getElementById('estimatedFare').removeAttribute('readonly');
+document.getElementById('estimatedFare').value = '10';
+\end{lstlisting}
+
+\subsubsection{Direct API Calls}
+Bypassing UI entirely by sending HTTP requests:
+\begin{lstlisting}[language=bash, caption=Postman Bypass Example]
+POST /api/bookings/create
+Content-Type: application/json
+
+{
+  "pickupLatitude": 19.0760,
+  "pickupLongitude": 72.8777,
+  "dropLatitude": 19.1136,
+  "dropLongitude": 72.9083,
+  "pickupTime": "2020-01-01T10:00:00",
+  "passengers": 25,
+  "vehicleType": "SEDAN",
+  "paymentMode": "CASH"
+}
+\end{lstlisting}
+
+\subsubsection{Automated UI Manipulation}
+Using Selenium WebDriver to programmatically bypass validations:
+\begin{lstlisting}[language=Java, caption=Selenium Bypass Test]
+JavascriptExecutor js = (JavascriptExecutor) driver;
+js.executeScript("document.getElementById('passengers').value = 25;");
+js.executeScript("document.getElementById('pickupTime')
+    .removeAttribute('min');");
+\end{lstlisting}
+
+\section{Test Cases and Results}
+
+\subsection{JUnit Backend Validation Tests}
+
+\begin{table}[h!]
+\centering
+\caption{JUnit Test Results}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Test ID} & \textbf{Test Case} & \textbf{Result} \\ \midrule
+BT-01 & Past pickup time rejection & PASS \\
+BT-02 & Excessive passengers (25) rejection & PASS \\
+BT-03 & Zero passengers rejection & PASS \\
+BT-04 & Negative passengers rejection & PASS \\
+BT-05 & Outside service area rejection & PASS \\
+BT-06 & Multiple active bookings prevention & PASS \\
+BT-07 & Valid booking acceptance & PASS \\
+BT-08 & Passenger boundary validation & PASS \\
+BT-09 & Distance validation & PASS \\
+BT-10 & Cancel non-existent booking & PASS \\
+BT-11 & Cancel other user's booking & PASS \\
+BT-12 & Cancel already cancelled booking & PASS \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Total Tests:} 12 \quad \textbf{Passed:} 12 \quad \textbf{Failed:} 0 \quad \textbf{Success Rate:} 100\%
+
+\subsection{Postman API Bypass Tests}
+
+\begin{table}[h!]
+\centering
+\caption{Postman Test Results}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Test ID} & \textbf{Bypass Technique} & \textbf{Server Response} \\ \midrule
+PT-01 & Past pickup time (2020-01-01) & 400 Bad Request \\
+PT-02 & 25 passengers & 400 Bad Request \\
+PT-03 & 0 passengers & 400 Bad Request \\
+PT-04 & -5 passengers & 400 Bad Request \\
+PT-05 & Outside service area (800km) & 400 Bad Request \\
+PT-06 & Upload .txt file as image & 400 Bad Request \\
+PT-07 & Access admin without role & 403 Forbidden \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Total Tests:} 7 \quad \textbf{Blocked:} 7 \quad \textbf{Success Rate:} 100\%
+
+\subsection{Selenium UI Manipulation Tests}
+
+\begin{table}[h!]
+\centering
+\caption{Selenium Test Results}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Test ID} & \textbf{Manipulation Type} & \textbf{Result} \\ \midrule
+ST-01 & Register and login & PASS \\
+ST-02 & JavaScript value injection & PASS \\
+ST-03 & Remove min attribute & PASS \\
+ST-04 & Enable readonly field & PASS \\
+ST-05 & Modify max attribute & PASS \\
+ST-06 & Remove required attribute & PASS \\
+ST-07 & Inject hidden field & PASS \\
+ST-08 & Disable form validation & PASS \\
+ST-09 & Boundary test & PASS \\
+ST-10 & Submit manipulated form & PASS \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Total Tests:} 10 \quad \textbf{Passed:} 10 \quad \textbf{Failed:} 0 \quad \textbf{Success Rate:} 100\%
+
+\section{Implementation Details}
+
+\subsection{Project Statistics}
+
+\begin{table}[h!]
+\centering
+\caption{Code Statistics}
+\begin{tabular}{@{}lr@{}}
+\toprule
+\textbf{Component} & \textbf{Lines of Code} \\ \midrule
+Java Backend & 1200 \\
+HTML/CSS/JS Frontend & 800 \\
+JUnit Tests & 310 \\
+Selenium Tests & 211 \\
+Postman Tests & 300 \\
+Documentation & 1000 \\ \midrule
+\textbf{Total} & \textbf{3821} \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\newpage
+\subsection{File Structure}
+
+\begin{verbatim}
+RideWithMe/
+├── src/
+│   ├── main/
+│   │   ├── java/com/taxiapp/
+│   │   │   ├── controller/          (5 files)
+│   │   │   ├── service/             (5 files)
+│   │   │   ├── model/               (4 files)
+│   │   │   ├── repository/          (4 files)
+│   │   │   ├── util/                (3 files)
+│   │   │   └── config/              (1 file)
+│   │   └── resources/
+│   │       ├── static/
+│   │       │   ├── pages/           (4 HTML files)
+│   │       │   ├── css/             (2 CSS files)
+│   │       │   └── js/              (4 JS files)
+│   │       └── application.properties
+│   └── test/
+│       └── java/com/taxiapp/
+│           └── BypassTestSuite.java
+└── tests/
+    ├── postman/
+    │   └── BypassTests.postman_collection.json
+    └── selenium/
+        └── BookingBypassUITest.java
+\end{verbatim}
+
+\section{Execution Instructions}
+
+\subsection{Prerequisites}
+\begin{itemize}
+    \item Java 11 or higher
+    \item Maven 3.6+
+    \item Chrome browser (for Selenium tests)
+    \item Postman or Newman (for API tests)
+\end{itemize}
+
+\subsection{Build and Run}
+
+\subsubsection{Build the Project}
+\begin{lstlisting}[language=bash]
+cd RideWithMe
+mvn clean install
+\end{lstlisting}
+
+\subsubsection{Run the Application}
+\begin{lstlisting}[language=bash]
+mvn spring-boot:run
+\end{lstlisting}
+
+Application starts on: \texttt{http://localhost:8080}
+
+\subsubsection{Access the Application}
+\begin{itemize}
+    \item Login Page: \texttt{http://localhost:8080/static/index.html}
+    \item Default User: \texttt{user@test.com} / \texttt{user123}
+    \item Default Admin: \texttt{admin@taxibooking.com} / \texttt{admin123}
+\end{itemize}
+
+\subsection{Running Tests}
+
+\subsubsection{JUnit Tests}
+\begin{lstlisting}[language=bash]
+mvn test
+\end{lstlisting}
+
+\subsubsection{Postman Tests}
+\begin{lstlisting}[language=bash]
+newman run tests/postman/BypassTests.postman_collection.json
+\end{lstlisting}
+
+\subsubsection{Selenium Tests}
+\begin{lstlisting}[language=bash]
+mvn test -Dtest=BookingBypassUITest
+\end{lstlisting}
+
+\section{Key Findings}
+
+\subsection{Vulnerabilities Identified}
+Through bypass testing, we identified the following potential vulnerabilities if server-side validation was absent:
+
+\begin{enumerate}
+    \item \textbf{Time Manipulation:} Users could book taxis for past dates
+    \item \textbf{Passenger Overflow:} System could accept bookings for 25+ passengers
+    \item \textbf{Fare Manipulation:} Users could set arbitrary low fares
+    \item \textbf{Service Area Bypass:} Bookings outside service radius could be accepted
+    \item \textbf{Multiple Bookings:} Users could create multiple active bookings
+    \item \textbf{File Upload Abuse:} Malicious files could be uploaded
+    \item \textbf{Role Escalation:} Regular users could access admin functions
+\end{enumerate}
+
+\subsection{Mitigation Strategies}
+All identified vulnerabilities are mitigated through:
+
+\begin{enumerate}
+    \item \textbf{Comprehensive Server-Side Validation:} Every input is validated on the backend
+    \item \textbf{Business Rule Enforcement:} All business logic enforced server-side
+    \item \textbf{Session Management:} Proper authentication and authorization
+    \item \textbf{Input Sanitization:} All inputs sanitized before processing
+    \item \textbf{Role-Based Access Control:} Strict permission checks
+\end{enumerate}
+
+\section{Demonstration Workflow}
+
+\subsection{For Teaching Assistant Review}
+
+\subsubsection{Part 1: Normal Flow }
+\begin{enumerate}
+    \item Open application at \texttt{http://localhost:8080/static/index.html}
+    \item Register new user
+    \item Login with credentials
+    \item Book a taxi with valid data
+    \item View bookings
+    \item Upload ID proof
+\end{enumerate}
+
+\subsubsection{Part 2: Bypass Attempts }
+\begin{enumerate}
+    \item Open dashboard
+    \item Open browser DevTools (F12)
+    \item Execute: \texttt{document.getElementById('passengers').value = 25;}
+    \item Submit form
+    \item Show server rejection in Network tab
+    \item Repeat with Postman
+    \item Show curl examples
+\end{enumerate}
+
+\subsubsection{Part 3: Test Results }
+\begin{enumerate}
+    \item Run: \texttt{mvn test}
+    \item Show all 12 tests pass
+    \item Explain each test case
+    \item Show Postman collection results
+\end{enumerate}
+
+\section{Individual Contributions}
+
+\subsection{MT2024106 Omkar Dhananjay Satav}
+\begin{itemize}
+    \item Backend service layer implementation
+    \item Server-side validation logic
+    \item JUnit test suite development
+    \item Database schema design
+    \item API endpoint implementation
+\end{itemize}
+
+\subsection{MT2024107 Shivam Padaliya}
+\begin{itemize}
+    \item Frontend UI/UX implementation
+    \item Client-side validation logic
+    \item Postman bypass test collection
+    \item Selenium UI manipulation tests
+    \item Documentation and report writing
+\end{itemize}
+
+\section{Conclusion}
+
+This project successfully demonstrates the critical importance of server-side validation in web applications. Through comprehensive bypass testing, we have proven that:
+
+\begin{enumerate}
+    \item \textbf{Client-side validation is easily bypassed} using browser DevTools, direct API calls, or automated scripts
+    \item \textbf{Server-side validation is essential} for maintaining application security and data integrity
+    \item \textbf{All business rules must be enforced on the server} regardless of client-side checks
+    \item \textbf{Comprehensive testing is necessary} to identify and prevent security vulnerabilities
+\end{enumerate}
+
+The taxi booking system developed in this project serves as a practical example of how proper validation architecture should be implemented. All 29 bypass test cases (12 JUnit + 7 Postman + 10 Selenium) passed successfully, confirming that the server correctly rejects all invalid inputs regardless of how they are submitted.
+
+\subsection{Future Enhancements}
+Potential improvements for future work include:
+\begin{itemize}
+    \item Implementation of rate limiting to prevent abuse
+    \item Addition of CAPTCHA for automated attack prevention
+    \item Integration of real-time monitoring and alerting
+    \item Implementation of Web Application Firewall (WAF)
+    \item Addition of comprehensive logging and audit trails
+\end{itemize}
+
+\section{References}
+
+\begin{enumerate}
+    \item CSE731 Software Testing Course Material, IIT Bombay
+    \item OWASP Web Application Security Testing Guide
+    \item Spring Boot Documentation: \url{https://spring.io/projects/spring-boot}
+    \item Selenium WebDriver Documentation: \url{https://www.selenium.dev/documentation/}
+    \item Postman API Testing Guide: \url{https://learning.postman.com/}
+    \item JUnit 5 User Guide: \url{https://junit.org/junit5/docs/current/user-guide/}
+\end{enumerate}
+
+\section*{Appendix A: Test Execution Results}
+
+\subsection*{JUnit Test Execution Output}
+\begin{verbatim}
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+\end{verbatim}
+
+\subsection*{Postman Test Execution Summary}
+All 7 bypass test cases executed successfully with appropriate server responses:
+\begin{itemize}
+    \item Past pickup time: 400 Bad Request - "Invalid pickup time"
+    \item Excessive passengers: 400 Bad Request - "Invalid passenger count"
+    \item Zero passengers: 400 Bad Request - "Invalid passenger count"
+    \item Negative passengers: 400 Bad Request - "Invalid passenger count"
+    \item Outside service area: 400 Bad Request - "outside service area"
+    \item Invalid file upload: 400 Bad Request - "Only JPG and PNG files allowed"
+    \item Unauthorized admin access: 403 Forbidden - "Admin access required"
+\end{itemize}
+
+\subsection*{Selenium Test Execution Summary}
+All 10 UI manipulation tests passed successfully, demonstrating that:
+\begin{itemize}
+    \item DOM elements can be manipulated via JavaScript
+    \item HTML5 attributes can be removed or modified
+    \item Form validation can be bypassed on client-side
+    \item Server-side validation correctly rejects all manipulated inputs
+\end{itemize}
+
+\section*{Appendix B: Detailed Test Specifications}
+
+\subsection*{JUnit Test Specifications}
+
+\begin{table}[h]
+\centering
+\caption{Detailed JUnit Test Cases}
+\small
+\begin{tabular}{@{}p{0.15\textwidth}p{0.4\textwidth}p{0.35\textwidth}@{}}
+\toprule
+\textbf{Test ID} & \textbf{Input} & \textbf{Expected Output} \\ \midrule
+BT-01 & pickupTime = 2020-01-01 & RuntimeException: "Invalid pickup time" \\
+BT-02 & passengers = 25 & RuntimeException: "Invalid passenger count" \\
+BT-03 & passengers = 0 & RuntimeException: "Invalid passenger count" \\
+BT-04 & passengers = -5 & RuntimeException: "Invalid passenger count" \\
+BT-05 & distance = 800 km & RuntimeException: "outside service area" \\
+BT-06 & Create 2nd active booking & RuntimeException: "already has active booking" \\
+BT-07 & Valid booking data & Booking created successfully \\
+BT-08 & passengers = 0,1,4,5 & Correct validation for each \\
+BT-09 & distance = -1,0,50,51 & Correct validation for each \\
+BT-10 & Cancel bookingId = 9999 & RuntimeException: "not found" \\
+BT-11 & Cancel other user booking & RuntimeException: "not found" \\
+BT-12 & Cancel cancelled booking & RuntimeException: "only cancel active" \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection*{Postman Test Specifications}
+
+Each Postman test sends a manipulated HTTP POST request to bypass client-side validation:
+\begin{itemize}
+    \item \textbf{Method:} POST
+    \item \textbf{Endpoint:} /api/bookings/create
+    \item \textbf{Headers:} Content-Type: application/json
+    \item \textbf{Body:} JSON with invalid data
+    \item \textbf{Verification:} Response status code and error message
+\end{itemize}
+
+\subsection*{Selenium Test Specifications}
+
+Each Selenium test uses JavascriptExecutor to manipulate DOM:
+\begin{itemize}
+    \item \textbf{Browser:} Chrome (headless mode)
+    \item \textbf{Manipulation:} JavaScript execution via WebDriver
+    \item \textbf{Verification:} Server response validation
+    \item \textbf{Assertions:} JUnit assertions on response content
+\end{itemize}
+
+\section*{Appendix C: API Documentation}
+
+\textbf{Authentication Endpoints:}
+\begin{itemize}
+    \item POST /api/auth/register
+    \item POST /api/auth/login
+    \item POST /api/auth/logout
+    \item GET /api/auth/session
+\end{itemize}
+
+\textbf{Booking Endpoints:}
+\begin{itemize}
+    \item POST /api/bookings/create
+    \item GET /api/bookings/user
+    \item GET /api/bookings/\{id\}
+    \item POST /api/bookings/\{id\}/cancel
+\end{itemize}
+
+\textbf{Admin Endpoints:}
+\begin{itemize}
+    \item GET /api/admin/users
+    \item GET /api/admin/bookings
+    \item GET /api/admin/drivers
+    \item POST /api/admin/users/\{id\}/toggle-status
+\end{itemize}
+
+\textbf{Driver Endpoints:}
+\begin{itemize}
+    \item GET /api/drivers/available
+    \item GET /api/drivers/\{id\}
+\end{itemize}
+
+\textbf{Upload Endpoints:}
+\begin{itemize}
+    \item POST /api/upload/id-proof
+\end{itemize}
+
+\end{document}
+

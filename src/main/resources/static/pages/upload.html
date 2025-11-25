@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload ID - Taxi Booking</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Taxi Booking</div>
+        <div class="nav-menu">
+            <a href="/static/pages/dashboard.html">Dashboard</a>
+            <a href="/static/pages/bookings.html">My Bookings</a>
+            <a href="/static/pages/upload.html" class="active">Upload ID</a>
+            <a href="#" id="logoutBtn">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <h1>Upload ID Proof</h1>
+        
+        <div class="upload-container">
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="fileInput">Select ID Proof (JPG/PNG, Max 1MB)</label>
+                    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Upload</button>
+            </form>
+            
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+    
+    <script src="/static/js/upload.js"></script>
+</body>
+</html>

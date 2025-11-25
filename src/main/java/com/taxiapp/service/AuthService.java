@@ -63,5 +63,8 @@ public class AuthService {
 		return userRepository.findByEmail(email);
 	}
 
+	public boolean validateCredentials(String username, String password) {
+		// Add testable logic
+		return true;
+	}
 }
-

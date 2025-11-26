@@ -4,55 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taxi Booking - Register</title>
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="stylesheet" href="/css/auth.css">
 </head>
-<body>
-    <div class="container">
-        <div class="auth-box">
-            <h1>Taxi Booking System</h1>
-            <h2>Register</h2>
-            
+<body class="auth-page">
+    <header class="top-nav">
+        <div class="brand">RideWithMe</div>
+        <div class="nav-links">
+            <a href="/index.html">Login</a>
+            <a href="/register.html" class="active">Register</a>
+            <a href="/pages/dashboard.html">Dashboard</a>
+        </div>
+    </header>
+
+    <main class="auth-grid">
+        <section class="auth-hero">
+            <h1>Create your travel companion account</h1>
+            <p>Manage journeys, favorite drivers, digital receipts, and safety preferences from one elegant hub.</p>
+            <div class="pill-list">
+                <span>Instant confirmations</span>
+                <span>Paperless receipts</span>
+                <span>Family sharing</span>
+                <span>Priority support</span>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-card">
+                    <strong>4.9★</strong>
+                    <small>Average Rating</small>
+                </div>
+                <div class="hero-card">
+                    <strong>85</strong>
+                    <small>Cities Served</small>
+                </div>
+                <div class="hero-card">
+                    <strong>99%</strong>
+                    <small>On-time rides</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="auth-card">
+            <div>
+                <h2>Join RideWithMe</h2>
+                <p class="auth-intro">Tell us a few details and start booking stress-free rides in under a minute.</p>
+            </div>
+
             <form id="registerForm">
                 <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" name="firstName" required>
+                    <label for="firstName">First name</label>
+                    <input type="text" id="firstName" name="firstName" required placeholder="Jane">
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" name="lastName" required>
+                    <label for="lastName">Last name</label>
+                    <input type="text" id="lastName" name="lastName" required placeholder="Doe">
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email address</label>
                     <input type="email" id="email" name="email" required 
-                           pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                           pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" placeholder="you@email.com">
                 </div>
-                
+
                 <div class="form-group">
-                    <label for="phoneNumber">Phone Number</label>
+                    <label for="phoneNumber">Phone number</label>
                     <input type="tel" id="phoneNumber" name="phoneNumber" required 
-                           pattern="[0-9]{10}">
+                           pattern="[0-9]{10}" placeholder="10-digit number">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required 
-                           minlength="6">
+                           minlength="6" placeholder="Minimum 6 characters">
                 </div>
-                
-                <button type="submit" class="btn-primary">Register</button>
+
+                <button type="submit" class="btn-primary">Create account</button>
             </form>
-            
+
             <p class="switch-auth">
-                Already have an account? <a href="/static/index.html">Login</a>
+                Already ride with us? <a href="/index.html">Back to login</a>
             </p>
-            
+
             <div id="message" class="message"></div>
-        </div>
-    </div>
-    
-    <script src="/static/js/auth.js"></script>
+        </section>
+    </main>
+
+    <script src="/js/auth.js"></script>
 </body>
 </html>
 

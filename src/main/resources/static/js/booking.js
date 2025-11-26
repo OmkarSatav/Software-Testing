@@ -122,9 +122,8 @@ passengersInput.addEventListener('input', function() {
 document.getElementById('logoutBtn').addEventListener('click', function(e) {
     e.preventDefault();
     fetch('/api/auth/logout', { method: 'POST' })
-        .then(() => window.location.href = '/static/index.html');
+        .then(() => window.location.href = '/index.html');
 });
-
 bookingForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -156,10 +155,10 @@ bookingForm.addEventListener('submit', async function(e) {
         const data = await response.json();
         
         if (data.success) {
-            showMessage(`Booking successful! Booking ID: ${data.bookingId}, Fare: ₹${data.fare}`);
-            setTimeout(() => {
-                window.location.href = '/static/pages/bookings.html';
-            }, 2000);
+                showMessage(`Booking successful! Booking ID: ${data.bookingId}, Fare: ₹${data.fare}`);
+                setTimeout(() => {
+                    window.location.href = '/pages/bookings.html';
+                }, 2000);
         } else {
             showMessage(data.message || 'Booking failed', true);
             bookBtn.disabled = false;

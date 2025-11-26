@@ -4,40 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taxi Booking - Login</title>
-    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="stylesheet" href="/css/auth.css">
 </head>
-<body>
-    <div class="container">
-        <div class="auth-box">
-            <h1>Taxi Booking System</h1>
-            <h2>Login</h2>
-            
+<body class="auth-page">
+    <header class="top-nav">
+        <div class="brand">RideWithMe</div>
+        <div class="nav-links">
+            <a href="/index.html" class="active">Login</a>
+            <a href="/register.html">Register</a>
+            <a href="/pages/dashboard.html">Dashboard</a>
+        </div>
+    </header>
+
+    <main class="auth-grid">
+        <section class="auth-hero">
+            <h1>Book trusted rides in a single tap</h1>
+            <p>Plan safer journeys, compare fares instantly, and keep track of every booking from any device.</p>
+            <div class="pill-list">
+                <span>Real-time tracking</span>
+                <span>Driver verification</span>
+                <span>Secure payments</span>
+                <span>24/7 support</span>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-card">
+                    <strong>12k+</strong>
+                    <small>Happy Riders</small>
+                </div>
+                <div class="hero-card">
+                    <strong>1.2M</strong>
+                    <small>KM Covered</small>
+                </div>
+                <div class="hero-card">
+                    <strong>350</strong>
+                    <small>Verified Drivers</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="auth-card">
+            <div>
+                <h2>Welcome back</h2>
+                <p class="auth-intro">Sign in to manage bookings, monitor rides, and explore new routes.</p>
+            </div>
+
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email address</label>
                     <input type="email" id="email" name="email" required 
                            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                           placeholder="Enter your email">
+                           placeholder="name@email.com">
                 </div>
-                
+
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required 
                            minlength="6" placeholder="Enter your password">
                 </div>
-                
-                <button type="submit" class="btn-primary">Login</button>
+
+                <button type="submit" class="btn-primary">Login to dashboard</button>
             </form>
-            
+
             <p class="switch-auth">
-                Don't have an account? <a href="/static/register.html">Register</a>
+                New to RideWithMe? <a href="/register.html">Create an account</a>
             </p>
-            
+
             <div id="message" class="message"></div>
-        </div>
-    </div>
-    
-    <script src="/static/js/auth.js"></script>
+        </section>
+    </main>
+
+    <script src="/js/auth.js"></script>
 </body>
 </html>
 

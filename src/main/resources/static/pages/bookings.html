@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bookings - Taxi Booking</title>
-    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <title>My Bookings - RideWithMe</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">Taxi Booking</div>
+        <div class="nav-brand">RideWithMe</div>
         <div class="nav-menu">
-            <a href="/static/pages/dashboard.html">Dashboard</a>
-            <a href="/static/pages/bookings.html" class="active">My Bookings</a>
-            <a href="/static/pages/upload.html">Upload ID</a>
-            <a href="#" id="logoutBtn">Logout</a>
+            <a href="/pages/dashboard.html">Dashboard</a>
+            <a href="/pages/bookings.html" class="active">My Bookings</a>
+            <a href="/pages/upload.html">Upload ID</a>
+            <a href="/index.html" id="logoutBtn" class="ghost-link">Logout</a>
         </div>
     </nav>
     
@@ -28,7 +28,7 @@
         document.getElementById('logoutBtn').addEventListener('click', function(e) {
             e.preventDefault();
             fetch('/api/auth/logout', { method: 'POST' })
-                .then(() => window.location.href = '/static/index.html');
+                .then(() => window.location.href = '/index.html');
         });
         
         fetch('/api/bookings/user')
@@ -36,7 +36,7 @@
             .then(bookings => {
                 const container = document.getElementById('bookingsList');
                 
-                if (bookings.length === 0) {
+                if (!bookings.length) {
                     container.innerHTML = '<p>No bookings found.</p>';
                     return;
                 }

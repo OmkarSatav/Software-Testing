@@ -89,7 +89,7 @@ public class DriverService {
 
     public Driver assignDriver(Long driverId) {
         Driver driver = driverRepository.findById(driverId).orElse(null);
-        if (driver != null && driver.isAvailable()) {
+        if (driver != null && Boolean.TRUE.equals(driver.getAvailable())) {
             driver.setAvailable(false);
             driver.setUpdatedAt(LocalDateTime.now());
             return driverRepository.save(driver);

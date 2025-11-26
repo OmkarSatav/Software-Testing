@@ -21,6 +21,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.exclude.tags></junit.exclude.tags>
     </properties>
 
     <dependencies>
@@ -141,6 +142,16 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.4</version>
+                <configuration>
+                    <properties>
+                        <excludeTags>${junit.exclude.tags}</excludeTags>
+                    </properties>
                 </configuration>
             </plugin>
         </plugins>

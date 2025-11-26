@@ -47,9 +47,9 @@ if (loginForm) {
                 showMessage('Login successful! Redirecting...');
                 setTimeout(() => {
                     if (data.role === 'ADMIN') {
-                        window.location.href = '/static/pages/admin.html';
+                        window.location.href = '/pages/admin.html';
                     } else {
-                        window.location.href = '/static/pages/dashboard.html';
+                        window.location.href = '/pages/dashboard.html';
                     }
                 }, 1000);
             } else {
@@ -103,7 +103,7 @@ if (registerForm) {
             if (data.success) {
                 showMessage('Registration successful! Redirecting to login...');
                 setTimeout(() => {
-                    window.location.href = '/static/index.html';
+                    window.location.href = '/index.html';
                 }, 2000);
             } else {
                 showMessage(data.message || 'Registration failed', true);

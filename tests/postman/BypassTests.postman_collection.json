@@ -21,8 +21,18 @@
 			"name": "Setup - Register User",
 			"event": [
 				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.collectionVariables.set(\"testEmail\", \"bypass+\" + Date.now() + \"@test.com\");"
+						]
+					}
+				},
+				{
 					"listen": "test",
 					"script": {
+						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Registration successful\", function() {",
 							"    pm.response.to.have.status(200);",
@@ -39,7 +49,7 @@
 				"header": [{"key": "Content-Type", "value": "application/json"}],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"email\": \"bypass@test.com\",\n  \"password\": \"test123\",\n  \"firstName\": \"Bypass\",\n  \"lastName\": \"Tester\",\n  \"phoneNumber\": \"9876543210\"\n}"
+					"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"test123\",\n  \"firstName\": \"Bypass\",\n  \"lastName\": \"Tester\",\n  \"phoneNumber\": \"9876543210\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/auth/register",
@@ -54,6 +64,7 @@
 				{
 					"listen": "test",
 					"script": {
+						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Login successful\", function() {",
 							"    pm.response.to.have.status(200);",
@@ -69,7 +80,7 @@
 				"header": [{"key": "Content-Type", "value": "application/json"}],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"email\": \"bypass@test.com\",\n  \"password\": \"test123\"\n}"
+					"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"test123\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/auth/login",
@@ -256,7 +267,9 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "test.txt"
+							"src": [
+								"C:\\Users\\Server\\Downloads\\MT2024106-MT2024107\\RideWithMe\\tests\\postman\\files\\test.txt"
+							]
 						}
 					]
 				},

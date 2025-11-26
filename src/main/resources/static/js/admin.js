@@ -126,7 +126,7 @@ async function toggleUserStatus(userId) {
 document.getElementById('logoutBtn').addEventListener('click', function(e) {
     e.preventDefault();
     fetch('/api/auth/logout', { method: 'POST' })
-        .then(() => window.location.href = '/static/index.html');
+        .then(() => window.location.href = '/index.html');
 });
 
 loadUsers();

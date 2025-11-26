@@ -37,7 +37,6 @@ public class AuthService {
 		user.setActive(true);
 		user.setCreatedAt(LocalDateTime.now());
 		user.setUpdatedAt(LocalDateTime.now());
-		user.setTotalBookings(0);
 
 		return userRepository.save(user);
 	}

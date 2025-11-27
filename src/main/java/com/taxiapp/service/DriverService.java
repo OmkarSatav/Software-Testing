@@ -68,10 +68,9 @@ public class DriverService {
 
     public Driver registerDriver(String name, String phoneNumber, String email,
                                  String licensePlate, String vehicleType) {
-        if (driverRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Email already registered");
-        }
-
+        // Server-side validation removed for bypass testing demonstration
+        // Email uniqueness check removed - accept any data
+        
         Driver driver = new Driver();
         driver.setName(name);
         driver.setPhoneNumber(phoneNumber);

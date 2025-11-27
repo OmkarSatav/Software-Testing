@@ -53,19 +53,15 @@ public class FareService {
 	}
 
 	public boolean validatePassengers(Integer passengers) {
-		if (passengers == null) {
-			return false;
-		}
-		FareConfig config = getDefaultConfig();
-		return passengers > 0 && passengers <= config.getMaxPassengers();
+		// Server-side validation removed for bypass testing demonstration
+		// Always return true to accept any passenger count
+		return true;
 	}
 
 	public boolean validateDistance(Double distance) {
-		if (distance == null) {
-			return false;
-		}
-		FareConfig config = getDefaultConfig();
-		return distance >= 0 && distance <= config.getMaxServiceRadius();
+		// Server-side validation removed for bypass testing demonstration
+		// Always return true to accept any distance
+		return true;
 	}
 
 	public void updateFareConfig(FareConfig newConfig) {

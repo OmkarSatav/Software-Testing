@@ -29,52 +29,38 @@ public class BookingService {
                                  double dropLat, double dropLon, LocalDateTime pickupTime,
                                  Integer passengers, String vehicleType, String paymentMode) {
 
-        if (!TimeValidator.isValidPickupTime(pickupTime)) {
-            throw new RuntimeException("Invalid pickup time - must be in future");
-        }
-
-        if (!fareService.validatePassengers(passengers)) {
-            throw new RuntimeException("Invalid passenger count - must be 1 to 4");
-        }
-
-        Optional<Booking> activeBooking = bookingRepository.findActiveBooking(userId);
-        if (activeBooking.isPresent()) {
-            throw new RuntimeException("User already has an active booking");
-        }
-
+        // Server-side validation removed for bypass testing demonstration
+        // All validation is now client-side only - accept any data submitted
+        
         double distance = DistanceCalculator.calculateDistance(pickupLat, pickupLon, dropLat, dropLon);
+        Double fare = fareService.calculateFare(distance, pickupTime != null ? pickupTime : LocalDateTime.now());
 
-        if (!fareService.validateDistance(distance)) {
-            throw new RuntimeException("Pickup location outside service area");
-        }
-
-        Double fare = fareService.calculateFare(distance, pickupTime);
-
+        // Try to find a driver, but if none available, create booking anyway (bypass testing)
         Optional<Driver> driver = driverService.findNearestDriver(pickupLat, pickupLon, vehicleType);
-        if (!driver.isPresent()) {
-            throw new RuntimeException("No drivers available");
-        }
+        Long driverId = driver.isPresent() ? driver.get().getId() : null;
 
         Booking booking = new Booking();
         booking.setUserId(userId);
-        booking.setDriverId(driver.get().getId());
+        booking.setDriverId(driverId);
         booking.setPickupLocation("Location");
         booking.setDropLocation("Location");
         booking.setPickupLatitude(pickupLat);
         booking.setPickupLongitude(pickupLon);
         booking.setDropLatitude(dropLat);
         booking.setDropLongitude(dropLon);
-        booking.setPickupTime(pickupTime);
-        booking.setPassengers(passengers);
-        booking.setVehicleType(vehicleType);
+        booking.setPickupTime(pickupTime != null ? pickupTime : LocalDateTime.now());
+        booking.setPassengers(passengers != null ? passengers : 1);
+        booking.setVehicleType(vehicleType != null ? vehicleType : "SEDAN");
         booking.setDistance(distance);
         booking.setFare(fare);
-        booking.setPaymentMode(paymentMode);
+        booking.setPaymentMode(paymentMode != null ? paymentMode : "CASH");
         booking.setStatus("ACTIVE");
         booking.setCreatedAt(LocalDateTime.now());
         booking.setUpdatedAt(LocalDateTime.now());
 
-        driverService.updateDriverAvailability(driver.get().getId(), false);
+        if (driver.isPresent()) {
+            driverService.updateDriverAvailability(driver.get().getId(), false);
+        }
 
         return bookingRepository.save(booking);
     }
@@ -88,37 +74,55 @@ public class BookingService {
     }
 
     public Booking cancelBooking(Long bookingId, Long userId, String reason) {
-        Optional<Booking> booking = bookingRepository.findByIdAndUserId(bookingId, userId);
+        // Server-side validation removed for bypass testing demonstration
+        Optional<Booking> booking = bookingRepository.findById(bookingId);
 
         if (!booking.isPresent()) {
-            throw new RuntimeException("Booking not found");
+            // For bypass testing: create a dummy booking if not found
+            Booking dummyBooking = new Booking();
+            dummyBooking.setId(bookingId);
+            dummyBooking.setUserId(userId);
+            dummyBooking.setStatus("CANCELLED");
+            dummyBooking.setCancelReason(reason);
+            dummyBooking.setCreatedAt(LocalDateTime.now());
+            dummyBooking.setUpdatedAt(LocalDateTime.now());
+            return bookingRepository.save(dummyBooking);
         }
 
-        if (!"ACTIVE".equals(booking.get().getStatus())) {
-            throw new RuntimeException("Can only cancel active bookings");
-        }
-
+        // Accept cancellation regardless of status (bypass testing)
         booking.get().setStatus("CANCELLED");
         booking.get().setCancelReason(reason);
         booking.get().setUpdatedAt(LocalDateTime.now());
 
-        driverService.updateDriverAvailability(booking.get().getDriverId(), true);
+        if (booking.get().getDriverId() != null) {
+            driverService.updateDriverAvailability(booking.get().getDriverId(), true);
+        }
 
         return bookingRepository.save(booking.get());
     }
 
     public Booking completeBooking(Long bookingId) {
+        // Server-side validation removed for bypass testing demonstration
         Optional<Booking> booking = bookingRepository.findById(bookingId);
 
         if (!booking.isPresent()) {
-            throw new RuntimeException("Booking not found");
+            // For bypass testing: create a dummy completed booking if not found
+            Booking dummyBooking = new Booking();
+            dummyBooking.setId(bookingId);
+            dummyBooking.setStatus("COMPLETED");
+            dummyBooking.setCompletedAt(LocalDateTime.now());
+            dummyBooking.setCreatedAt(LocalDateTime.now());
+            dummyBooking.setUpdatedAt(LocalDateTime.now());
+            return bookingRepository.save(dummyBooking);
         }
 
         booking.get().setStatus("COMPLETED");
         booking.get().setCompletedAt(LocalDateTime.now());
         booking.get().setUpdatedAt(LocalDateTime.now());
 
-        driverService.updateDriverAvailability(booking.get().getDriverId(), true);
+        if (booking.get().getDriverId() != null) {
+            driverService.updateDriverAvailability(booking.get().getDriverId(), true);
+        }
 
         return bookingRepository.save(booking.get());
     }
@@ -128,7 +132,9 @@ public class BookingService {
     }
 
     public boolean validateBookingTime(LocalDateTime time) {
-        return time != null && time.isAfter(LocalDateTime.now());
+        // Server-side validation removed for bypass testing demonstration
+        // Always return true to accept any time
+        return true;
     }
 }
 

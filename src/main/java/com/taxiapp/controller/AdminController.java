@@ -24,10 +24,12 @@ public class AdminController {
 
 	@GetMapping("/users")
 	public ResponseEntity<?> getAllUsers(HttpSession session) {
-		String userRole = (String) session.getAttribute("userRole");
-		if (!adminService.isAdmin(userRole)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN)
-					.body(createErrorResponse("Admin access required"));
+		// Server-side role validation removed for bypass testing demonstration
+		// Allow any authenticated user to access admin endpoints
+		Long userId = (Long) session.getAttribute("userId");
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(createErrorResponse("User not authenticated"));
 		}
 
 		List<User> users = adminService.getAllUsers();
@@ -36,10 +38,12 @@ public class AdminController {
 
 	@GetMapping("/bookings")
 	public ResponseEntity<?> getAllBookings(HttpSession session) {
-		String userRole = (String) session.getAttribute("userRole");
-		if (!adminService.isAdmin(userRole)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN)
-					.body(createErrorResponse("Admin access required"));
+		// Server-side role validation removed for bypass testing demonstration
+		// Allow any authenticated user to access admin endpoints
+		Long userId = (Long) session.getAttribute("userId");
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(createErrorResponse("User not authenticated"));
 		}
 
 		List<Booking> bookings = adminService.getAllBookings();
@@ -48,10 +52,12 @@ public class AdminController {
 
 	@GetMapping("/drivers")
 	public ResponseEntity<?> getAllDrivers(HttpSession session) {
-		String userRole = (String) session.getAttribute("userRole");
-		if (!adminService.isAdmin(userRole)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN)
-					.body(createErrorResponse("Admin access required"));
+		// Server-side role validation removed for bypass testing demonstration
+		// Allow any authenticated user to access admin endpoints
+		Long userId = (Long) session.getAttribute("userId");
+		if (userId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(createErrorResponse("User not authenticated"));
 		}
 
 		List<Driver> drivers = adminService.getAllDrivers();
@@ -60,10 +66,12 @@ public class AdminController {
 
 	@PostMapping("/users/{userId}/toggle-status")
 	public ResponseEntity<?> toggleUserStatus(@PathVariable Long userId, HttpSession session) {
-		String userRole = (String) session.getAttribute("userRole");
-		if (!adminService.isAdmin(userRole)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN)
-					.body(createErrorResponse("Admin access required"));
+		// Server-side role validation removed for bypass testing demonstration
+		// Allow any authenticated user to access admin endpoints
+		Long sessionUserId = (Long) session.getAttribute("userId");
+		if (sessionUserId == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(createErrorResponse("User not authenticated"));
 		}
 
 		boolean result = adminService.toggleUserStatus(userId);

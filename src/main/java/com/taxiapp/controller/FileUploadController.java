@@ -27,26 +27,16 @@ public class FileUploadController {
 					.body(createErrorResponse("User not authenticated"));
 		}
 
-		if (file.isEmpty()) {
-			return ResponseEntity.badRequest()
-					.body(createErrorResponse("No file uploaded"));
-		}
-
-		if (file.getSize() > MAX_FILE_SIZE) {
-			return ResponseEntity.badRequest()
-					.body(createErrorResponse("File size exceeds 1MB limit"));
-		}
-
-		if (!ALLOWED_TYPES.contains(file.getContentType())) {
-			return ResponseEntity.badRequest()
-					.body(createErrorResponse("Only JPG and PNG files are allowed"));
-		}
+		// Server-side validation removed for bypass testing demonstration
+		// Accept any file regardless of size, type, or content
+		// All validation is now client-side only
 
 		Map<String, Object> response = new HashMap<>();
 		response.put("success", true);
-		response.put("filename", file.getOriginalFilename());
+		response.put("filename", file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown");
 		response.put("size", file.getSize());
-		response.put("message", "File uploaded successfully");
+		response.put("contentType", file.getContentType());
+		response.put("message", "File uploaded successfully (bypass testing mode)");
 
 		return ResponseEntity.ok(response);
 	}

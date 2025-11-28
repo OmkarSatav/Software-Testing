@@ -8,31 +8,12 @@ function showMessage(message, isError = false) {
     messageDiv.style.display = 'block';
 }
 
-function validateEmail(email) {
-    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return re.test(email);
-}
-
-function validatePassword(password) {
-    return password && password.length >= 6;
-}
-
 if (loginForm) {
     loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
-        
-        if (!validateEmail(email)) {
-            showMessage('Please enter a valid email address', true);
-            return;
-        }
-        
-        if (!validatePassword(password)) {
-            showMessage('Password must be at least 6 characters', true);
-            return;
-        }
         
         try {
             const response = await fetch('/api/auth/login', {
@@ -70,26 +51,6 @@ if (registerForm) {
         const email = document.getElementById('email').value.trim();
         const phoneNumber = document.getElementById('phoneNumber').value.trim();
         const password = document.getElementById('password').value;
-        
-        if (!firstName || !lastName) {
-            showMessage('Please enter your full name', true);
-            return;
-        }
-        
-        if (!validateEmail(email)) {
-            showMessage('Please enter a valid email address', true);
-            return;
-        }
-        
-        if (!/^[0-9]{10}$/.test(phoneNumber)) {
-            showMessage('Phone number must be 10 digits', true);
-            return;
-        }
-        
-        if (!validatePassword(password)) {
-            showMessage('Password must be at least 6 characters', true);
-            return;
-        }
         
         try {
             const response = await fetch('/api/auth/register', {

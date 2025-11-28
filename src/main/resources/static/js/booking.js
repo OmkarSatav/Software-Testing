@@ -9,8 +9,6 @@ const EARTH_RADIUS = 6371;
 const BASE_FARE = 50;
 const RATE_PER_KM = 12;
 const PEAK_MULTIPLIER = 1.5;
-const MAX_PASSENGERS = 4;
-const MAX_SERVICE_RADIUS = 50;
 
 function showMessage(message, isError = false) {
     messageDiv.textContent = message;
@@ -56,13 +54,6 @@ function calculateFare() {
     }
     
     const distance = calculateDistance(pickupLat, pickupLon, dropLat, dropLon);
-    
-    if (distance > MAX_SERVICE_RADIUS) {
-        estimatedFareInput.value = 'Outside service area';
-        bookBtn.disabled = true;
-        return;
-    }
-    
     let fare = BASE_FARE + (distance * RATE_PER_KM);
     
     if (isPeakHour(pickupTime)) {
@@ -70,53 +61,12 @@ function calculateFare() {
     }
     
     estimatedFareInput.value = `₹${fare.toFixed(2)} (${distance.toFixed(2)} km)`;
-    bookBtn.disabled = false;
-}
-
-function validateBookingForm() {
-    const pickupTime = new Date(pickupTimeInput.value);
-    const now = new Date();
-    
-    if (pickupTime <= now) {
-        showMessage('Pickup time must be in the future', true);
-        return false;
-    }
-    
-    const passengers = parseInt(passengersInput.value);
-    if (passengers < 1 || passengers > MAX_PASSENGERS) {
-        showMessage(`Passengers must be between 1 and ${MAX_PASSENGERS}`, true);
-        return false;
-    }
-    
-    const vehicleType = document.getElementById('vehicleType').value;
-    if (!vehicleType) {
-        showMessage('Please select a vehicle type', true);
-        return false;
-    }
-    
-    const paymentMode = document.getElementById('paymentMode').value;
-    if (!paymentMode) {
-        showMessage('Please select a payment mode', true);
-        return false;
-    }
-    
-    return true;
 }
 
 setMinDateTime();
 
 document.querySelectorAll('#pickupLat, #pickupLon, #dropLat, #dropLon, #pickupTime').forEach(input => {
     input.addEventListener('input', calculateFare);
-});
-
-passengersInput.addEventListener('input', function() {
-    const value = parseInt(this.value);
-    if (value > MAX_PASSENGERS) {
-        this.value = MAX_PASSENGERS;
-        showMessage(`Maximum ${MAX_PASSENGERS} passengers allowed`, true);
-    } else if (value < 1) {
-        this.value = 1;
-    }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', function(e) {
@@ -127,16 +77,12 @@ document.getElementById('logoutBtn').addEventListener('click', function(e) {
 bookingForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    if (!validateBookingForm()) {
-        return;
-    }
-    
     const bookingData = {
         pickupLatitude: parseFloat(document.getElementById('pickupLat').value),
         pickupLongitude: parseFloat(document.getElementById('pickupLon').value),
         dropLatitude: parseFloat(document.getElementById('dropLat').value),
         dropLongitude: parseFloat(document.getElementById('dropLon').value),
-        pickupTime: new Date(pickupTimeInput.value).toISOString(),
+        pickupTime: pickupTimeInput.value,
         passengers: parseInt(passengersInput.value),
         vehicleType: document.getElementById('vehicleType').value,
         paymentMode: document.getElementById('paymentMode').value

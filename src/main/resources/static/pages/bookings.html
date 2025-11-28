@@ -35,6 +35,11 @@
             .then(response => response.json())
             .then(bookings => {
                 const container = document.getElementById('bookingsList');
+                if (!Array.isArray(bookings)) {
+                    document.getElementById('message').textContent = bookings.message || 'Unable to load bookings';
+                    document.getElementById('message').className = 'message error';
+                    return;
+                }
                 
                 if (!bookings.length) {
                     container.innerHTML = '<p>No bookings found.</p>';
@@ -63,7 +68,7 @@
                     container.appendChild(card);
                 });
             })
-            .catch(error => {
+            .catch(() => {
                 document.getElementById('message').textContent = 'Error loading bookings';
                 document.getElementById('message').className = 'message error';
             });

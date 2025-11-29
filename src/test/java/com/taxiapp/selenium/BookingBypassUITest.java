@@ -27,7 +27,7 @@ import java.time.Duration;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@DisplayName("Selenium Bypass Testing - UI Manipulation Tests")
+@DisplayName("Selenium Bypass Testing - Client-Side Validation Bypass + UI Manipulation")
 public class BookingBypassUITest {
 
     @LocalServerPort
@@ -43,7 +43,7 @@ public class BookingBypassUITest {
         options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage");
         driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        baseUrl = "http://localhost:" + port;
+        baseUrl = "http://localhost:" + 8080;
     }
 
     @AfterAll
@@ -55,67 +55,240 @@ public class BookingBypassUITest {
 
     @Test
     @Order(1)
-    @DisplayName("UI TEST 1: Register and Login")
-    public void testRegisterAndLogin() {
+    @DisplayName("UI BYPASS 1: Register + Login with INVALID email by disabling HTML5 validation")
+    public void testRegisterAndLoginWithInvalidEmailBypassingValidation() {
+        // === Step 1: Register with invalid email ===
         driver.get(baseUrl + "/register.html");
-        waitForElement("firstName");
+        waitForElement("registerForm");
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        WebElement registerForm = driver.findElement(By.id("registerForm"));
+        WebElement submitButton = driver.findElement(By.cssSelector("#registerForm button[type='submit']"));
+
+        js.executeScript("arguments[0].setAttribute('novalidate','true');", registerForm);
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         driver.findElement(By.id("firstName")).sendKeys("Selenium");
         driver.findElement(By.id("lastName")).sendKeys("Tester");
-        driver.findElement(By.id("email")).sendKeys("selenium@test.com");
+        driver.findElement(By.id("email")).sendKeys("seleniumtest@com");
         driver.findElement(By.id("phoneNumber")).sendKeys("9876543210");
         driver.findElement(By.id("password")).sendKeys("test123");
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+
+        submitButton.click();
 
         wait.until(ExpectedConditions.urlContains("register"));
-        Assertions.assertTrue(driver.getCurrentUrl().contains("register"));
 
+        // === Step 2: Login with same INVALID email, again bypassing HTML validation ===
         driver.get(baseUrl + "/index.html");
-        waitForElement("email");
-        driver.findElement(By.id("email")).sendKeys("selenium@test.com");
+        waitForElement("loginForm");
+
+        WebElement loginForm = driver.findElement(By.id("loginForm"));
+        WebElement loginButton = driver.findElement(By.cssSelector("#loginForm button[type='submit']"));
+
+        js.executeScript("arguments[0].setAttribute('novalidate','true');", loginForm);
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        driver.findElement(By.id("email")).clear();
+        driver.findElement(By.id("email")).sendKeys("seleniumtest@com");
         driver.findElement(By.id("password")).sendKeys("test123");
-        Assertions.assertEquals("selenium@test.com", driver.findElement(By.id("email")).getAttribute("value"));
+
+        loginButton.click();
+
+        wait.until(ExpectedConditions.not(
+                ExpectedConditions.urlToBe(baseUrl + "/index.html")
+        ));
     }
 
     @Test
     @Order(2)
-    @DisplayName("BYPASS UI TEST 2: Manipulate Passenger Field via JavaScript")
-    public void testManipulatePassengerField() {
+    @DisplayName("UI BYPASS 2: Submit booking with 25 passengers (bypass min/max and validation)")
+    public void testBookingWithExcessivePassengersBypassingValidation() {
         driver.get(baseUrl + "/pages/dashboard.html");
-        waitForElement("passengers");
+        waitForElement("bookingForm");
 
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("document.getElementById('passengers').value = 25;");
 
-        String passengerValue = driver.findElement(By.id("passengers")).getAttribute("value");
-        Assertions.assertEquals("25", passengerValue);
+        js.executeScript("document.getElementById('bookingForm').setAttribute('novalidate','true');");
+
+        js.executeScript("var p = document.getElementById('passengers'); " +
+                "p.removeAttribute('min'); p.removeAttribute('max'); p.value = 25;");
+
+        js.executeScript("document.getElementById('pickupLat').value = 19.0760;");
+        js.executeScript("document.getElementById('pickupLon').value = 72.8777;");
+        js.executeScript("document.getElementById('dropLat').value = 19.1136;");
+        js.executeScript("document.getElementById('dropLon').value = 72.9083;");
+        js.executeScript("document.getElementById('pickupTime').value = '2030-01-01T10:00';");
+        js.executeScript("document.getElementById('vehicleType').value = 'SEDAN';");
+        js.executeScript("document.getElementById('paymentMode').value = 'CASH';");
+
+        Assertions.assertEquals("25",
+                driver.findElement(By.id("passengers")).getAttribute("value"));
+
+        WebElement form = driver.findElement(By.id("bookingForm"));
+        form.submit();
+
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("dashboard"),
+                ExpectedConditions.urlContains("bookings"),
+                ExpectedConditions.presenceOfElementLocated(By.id("message"))
+        ));
     }
 
     @Test
     @Order(3)
-    @DisplayName("BYPASS UI TEST 3: Remove Min Attribute from Pickup Time")
-    public void testRemoveMinAttributeFromPickupTime() {
+    @DisplayName("UI BYPASS 3: Submit booking with PAST pickup time")
+    public void testBookingWithPastPickupTimeBypassingValidation() {
         driver.get(baseUrl + "/pages/dashboard.html");
-        waitForElement("pickupTime");
+        waitForElement("bookingForm");
 
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("document.getElementById('pickupTime').removeAttribute('min');");
+
+        js.executeScript("document.getElementById('bookingForm').setAttribute('novalidate','true');");
+
+        js.executeScript("document.getElementById('pickupLat').value = 19.0760;");
+        js.executeScript("document.getElementById('pickupLon').value = 72.8777;");
+        js.executeScript("document.getElementById('dropLat').value = 19.1136;");
+        js.executeScript("document.getElementById('dropLon').value = 72.9083;");
+
         js.executeScript("document.getElementById('pickupTime').value = '2020-01-01T10:00';");
 
-        String timeValue = driver.findElement(By.id("pickupTime")).getAttribute("value");
-        Assertions.assertEquals("2020-01-01T10:00", timeValue);
+        js.executeScript("document.getElementById('passengers').value = 2;");
+        js.executeScript("document.getElementById('vehicleType').value = 'SEDAN';");
+        js.executeScript("document.getElementById('paymentMode').value = 'CASH';");
+
+        WebElement form = driver.findElement(By.id("bookingForm"));
+        form.submit();
+
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("dashboard"),
+                ExpectedConditions.urlContains("bookings"),
+                ExpectedConditions.presenceOfElementLocated(By.id("message"))
+        ));
     }
 
     @Test
     @Order(4)
-    @DisplayName("BYPASS UI TEST 4: Enable Disabled Fare Field")
-    public void testEnableDisabledFareField() {
+    @DisplayName("UI BYPASS 4: Submit booking with ZERO passengers")
+    public void testBookingWithZeroPassengersBypassingValidation() {
+        driver.get(baseUrl + "/pages/dashboard.html");
+        waitForElement("bookingForm");
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        js.executeScript("document.getElementById('bookingForm').setAttribute('novalidate','true');");
+
+        js.executeScript("var p = document.getElementById('passengers'); " +
+                "p.removeAttribute('min'); p.value = 0;");
+
+        js.executeScript("document.getElementById('pickupLat').value = 19.0760;");
+        js.executeScript("document.getElementById('pickupLon').value = 72.8777;");
+        js.executeScript("document.getElementById('dropLat').value = 19.1136;");
+        js.executeScript("document.getElementById('dropLon').value = 72.9083;");
+        js.executeScript("document.getElementById('pickupTime').value = '2030-01-01T10:00';");
+        js.executeScript("document.getElementById('vehicleType').value = 'SEDAN';");
+        js.executeScript("document.getElementById('paymentMode').value = 'CASH';");
+
+        Assertions.assertEquals("0",
+                driver.findElement(By.id("passengers")).getAttribute("value"));
+
+        WebElement form = driver.findElement(By.id("bookingForm"));
+        form.submit();
+
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("dashboard"),
+                ExpectedConditions.urlContains("bookings"),
+                ExpectedConditions.presenceOfElementLocated(By.id("message"))
+        ));
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("UI BYPASS 5: Submit booking with NEGATIVE passengers")
+    public void testBookingWithNegativePassengersBypassingValidation() {
+        driver.get(baseUrl + "/pages/dashboard.html");
+        waitForElement("bookingForm");
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        js.executeScript("document.getElementById('bookingForm').setAttribute('novalidate','true');");
+
+        js.executeScript("var p = document.getElementById('passengers'); " +
+                "p.removeAttribute('min'); p.value = -5;");
+
+        js.executeScript("document.getElementById('pickupLat').value = 19.0760;");
+        js.executeScript("document.getElementById('pickupLon').value = 72.8777;");
+        js.executeScript("document.getElementById('dropLat').value = 19.1136;");
+        js.executeScript("document.getElementById('dropLon').value = 72.9083;");
+        js.executeScript("document.getElementById('pickupTime').value = '2030-01-01T10:00';");
+        js.executeScript("document.getElementById('vehicleType').value = 'SEDAN';");
+        js.executeScript("document.getElementById('paymentMode').value = 'CASH';");
+
+        Assertions.assertEquals("-5",
+                driver.findElement(By.id("passengers")).getAttribute("value"));
+
+        WebElement form = driver.findElement(By.id("bookingForm"));
+        form.submit();
+
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("dashboard"),
+                ExpectedConditions.urlContains("bookings"),
+                ExpectedConditions.presenceOfElementLocated(By.id("message"))
+        ));
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("UI BYPASS 6: Submit booking with DROP outside service area")
+    public void testBookingWithOutsideServiceAreaBypassingValidation() {
+        driver.get(baseUrl + "/pages/dashboard.html");
+        waitForElement("bookingForm");
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+
+        js.executeScript("document.getElementById('bookingForm').setAttribute('novalidate','true');");
+
+        js.executeScript("document.getElementById('pickupLat').value = 19.0760;");
+        js.executeScript("document.getElementById('pickupLon').value = 72.8777;");
+
+        js.executeScript("document.getElementById('dropLat').value = 28.6139;");
+        js.executeScript("document.getElementById('dropLon').value = 77.2090;");
+
+        js.executeScript("document.getElementById('pickupTime').value = '2030-01-01T10:00';");
+        js.executeScript("document.getElementById('passengers').value = 2;");
+        js.executeScript("document.getElementById('vehicleType').value = 'SEDAN';");
+        js.executeScript("document.getElementById('paymentMode').value = 'CASH';");
+
+        WebElement form = driver.findElement(By.id("bookingForm"));
+        form.submit();
+
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.urlContains("dashboard"),
+                ExpectedConditions.urlContains("bookings"),
+                ExpectedConditions.presenceOfElementLocated(By.id("message"))
+        ));
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("UI BYPASS 7: Enable and override readonly Estimated Fare field via JavaScript")
+    public void testEnableAndManipulateEstimatedFareField() {
         driver.get(baseUrl + "/pages/dashboard.html");
         waitForElement("estimatedFare");
 
         JavascriptExecutor js = (JavascriptExecutor) driver;
         WebElement fareField = driver.findElement(By.id("estimatedFare"));
-        Assertions.assertTrue(fareField.getAttribute("readonly") != null);
+
+        Assertions.assertNotNull(fareField.getAttribute("readonly"));
 
         js.executeScript("document.getElementById('estimatedFare').removeAttribute('readonly');");
         js.executeScript("document.getElementById('estimatedFare').value = '10';");
@@ -125,56 +298,9 @@ public class BookingBypassUITest {
     }
 
     @Test
-    @Order(5)
-    @DisplayName("BYPASS UI TEST 5: Modify Max Attribute on Passengers")
-    public void testModifyMaxAttributePassengers() {
-        driver.get(baseUrl + "/pages/dashboard.html");
-        waitForElement("passengers");
-
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("document.getElementById('passengers').setAttribute('max', '100');");
-        js.executeScript("document.getElementById('passengers').value = 50;");
-
-        String maxValue = driver.findElement(By.id("passengers")).getAttribute("max");
-        Assertions.assertEquals("100", maxValue);
-    }
-
-    @Test
-    @Order(6)
-    @DisplayName("BYPASS UI TEST 6: Remove Required Attribute from Vehicle Type")
-    public void testRemoveRequiredAttribute() {
-        driver.get(baseUrl + "/pages/dashboard.html");
-        waitForElement("vehicleType");
-
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("document.getElementById('vehicleType').removeAttribute('required');");
-
-        WebElement vehicleType = driver.findElement(By.id("vehicleType"));
-        Assertions.assertNull(vehicleType.getAttribute("required"));
-    }
-
-    @Test
-    @Order(7)
-    @DisplayName("BYPASS UI TEST 7: Manipulate Hidden Distance Field")
-    public void testManipulateHiddenFields() {
-        driver.get(baseUrl + "/pages/dashboard.html");
-        waitForElement("bookingForm");
-
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("var input = document.createElement('input'); " +
-                "input.type = 'hidden'; " +
-                "input.id = 'distance'; " +
-                "input.value = '1'; " +
-                "document.getElementById('bookingForm').appendChild(input);");
-
-        WebElement hiddenField = driver.findElement(By.id("distance"));
-        Assertions.assertEquals("1", hiddenField.getAttribute("value"));
-    }
-
-    @Test
     @Order(8)
-    @DisplayName("BYPASS UI TEST 8: Disable Client-Side Validation")
-    public void testDisableClientValidation() {
+    @DisplayName("UI BYPASS 8: Disable client-side validation globally with novalidate")
+    public void testDisableClientSideValidationFlag() {
         driver.get(baseUrl + "/pages/dashboard.html");
         waitForElement("bookingForm");
 
@@ -185,48 +311,8 @@ public class BookingBypassUITest {
         Assertions.assertNotNull(form.getAttribute("novalidate"));
     }
 
-    @Test
-    @Order(9)
-    @DisplayName("BYPASS UI TEST 9: Verify Client-Side Passenger Limit Enforcement")
-    public void testClientSidePassengerLimit() {
-        driver.get(baseUrl + "/pages/dashboard.html");
-        waitForElement("passengers");
-
-        WebElement passengersInput = driver.findElement(By.id("passengers"));
-        passengersInput.clear();
-        passengersInput.sendKeys("10");
-
-        String value = passengersInput.getAttribute("value");
-        Assertions.assertTrue(Integer.parseInt(value) <= 4 || Integer.parseInt(value) > 4);
-    }
-
-    @Test
-    @Order(10)
-    @DisplayName("BYPASS UI TEST 10: Verify Form Submission with Manipulated Data")
-    public void testFormSubmissionWithManipulatedData() {
-        driver.get(baseUrl + "/pages/dashboard.html");
-        waitForElement("bookingForm");
-
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-
-        js.executeScript("document.getElementById('pickupLat').value = 19.0760;");
-        js.executeScript("document.getElementById('pickupLon').value = 72.8777;");
-        js.executeScript("document.getElementById('dropLat').value = 19.1136;");
-        js.executeScript("document.getElementById('dropLon').value = 72.9083;");
-        js.executeScript("document.getElementById('pickupTime').value = '2020-01-01T10:00';");
-        js.executeScript("document.getElementById('passengers').value = 25;");
-        js.executeScript("document.getElementById('vehicleType').value = 'SEDAN';");
-        js.executeScript("document.getElementById('paymentMode').value = 'CASH';");
-
-        Assertions.assertEquals("25", driver.findElement(By.id("passengers")).getAttribute("value"));
-        Assertions.assertEquals("SEDAN", driver.findElement(By.id("vehicleType")).getAttribute("value"));
-        Assertions.assertEquals("CASH", driver.findElement(By.id("paymentMode")).getAttribute("value"));
-    }
 
     private void waitForElement(String elementId) {
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id(elementId)));
     }
-
 }
-
-
